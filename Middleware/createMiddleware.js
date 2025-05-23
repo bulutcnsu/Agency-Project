@@ -7,15 +7,15 @@ const Swal = require('sweetalert2')
     
 
 module.exports = [
-  body('title').notEmpty().withMessage('Başlık boş olamaz'),
-  body('subtitle').notEmpty().withMessage('Alt başlık boş olamaz'),
-  body('projectName').notEmpty().withMessage('Proje adı boş olamaz'),
-  body('category').notEmpty().withMessage('Kategori seçilmelidir'),
+  body('title').notEmpty().withMessage('Title cannot be empty'),
+  body('subtitle').notEmpty().withMessage('Subtitle cannot be empty'),
+  body('projectName').notEmpty().withMessage('Project Name cannot be empty'),
+  body('category').notEmpty().withMessage('Category must be chosen'),
   
  
   body('image').custom((value, { req }) => {
     if (!req.files || !req.files.image) {
-         throw new Error('Lütfen bir resim dosyası yükleyin');
+         throw new Error('Please upload a image file');
   }
 
     const image = req.files.image;
@@ -23,8 +23,8 @@ module.exports = [
     const extension = image.name.split('.').pop().toLowerCase();
 
     if (!allowedExtensions.includes(extension)) {
-      //throw new Error('Sadece jpg, jpeg, png, gif dosyaları yüklenebilir');
-    throw new Error('Sadece jpg, jpeg, png, gif dosyaları kabul edilir');}
+      
+    throw new Error('Only jpg, jpeg, png, gif files accepted');}
     
     return true;
   }),
@@ -32,8 +32,7 @@ module.exports = [
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-     console.log("gelen hata", errors.array()[0].msg  );
-      return res.status(400).json({ success: false, message: errors.array()[0].msg}); 
+          return res.status(400).json({ success: false, message: errors.array()[0].msg}); 
                  
     };
    
