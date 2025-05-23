@@ -1,0 +1,375 @@
+<%- include('partials/_header.ejs') -%>
+  <%- include('partials/_navigation.ejs') -%>
+
+  <section class="page-section bg-light" id="portfolio">
+  
+    <div class="container">
+        <div class="text-center">
+            <h2 class="section-heading text-uppercase">Portfolio</h2>
+            <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+        </div>
+
+       <!-- Button trigger modal -->
+
+       <div class="d-grid col-5 mx-auto mb-4 ">
+           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+       <h5> Add Post</h5>
+       </button>
+  
+      </div>
+ 
+ 
+        <div class="row">
+
+          <% posts.forEach(post => { %>
+            <div class="col-lg-4 col-sm-6  mb-4 h-70 ">
+                <!-- Portfolio item 1-->          
+                 
+                    <div class="portfolio-item openModal"
+                        data-bs-toggle="modal"
+                        data-bs-target="#showPostModal"
+                        data-title="<%= post.title %>"
+                        data-subtitle="<%= post.subtitle %>"
+                        data-project-name="<%= post.projectName %>"
+                        data-detail="<%= post.detail %>"
+                        data-description="<%= post.description %>"
+                        data-img="uploads/<%= post.image %>"
+                        data-client="<%= post.client %>"
+                        data-category="<%= post.category %>"
+                        data-postid ="<%= post._id %>">
+           
+                    <a class="portfolio-link" data-bs-toggle="modal"  data-bs-target="#showPostModal" >
+                        <div class="portfolio-hover">
+                            <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                        </div>
+                        <div class="ratio ratio-4x3 ">
+                          <p id="postId" hidden="true"> <%= post._id %></p>
+                          <p id="imgId" hidden="true">uploads/<%= post.image %></p>
+                        <img class=" object-fit-cover w-100 h-100" src="uploads/<%=post.image %>" alt="..."/>
+                       
+                      </div>
+                      </a>
+                        <div class="portfolio-caption">
+                        <div class="portfolio-caption-heading"> <%= post.title %> </div>
+                        <div class="portfolio-caption-subheading text-muted"><%= post.subtitle %> </div>
+                    </div>
+                  
+                </div>
+
+
+            </div>
+              <% }); %>
+           
+        </div>
+
+    </div>
+</section>
+
+
+<!-- Portfolio item 2 modal popup-->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+let postid = null;
+   document.addEventListener('DOMContentLoaded', function()  {
+   document.querySelectorAll('.openModal').forEach(elem => {
+        elem.addEventListener('click', function () {
+                    
+          document.getElementById('modalProjectName').textContent = this.dataset.projectName;
+          document.getElementById('modalDetail').textContent = this.dataset.detail;
+          document.getElementById('modalDescription').textContent = this.dataset.description;
+          document.getElementById('modalClient').textContent = this.dataset.client || 'Unknown';
+          document.getElementById('modalCategory').textContent = this.dataset.category || 'Undefined';
+         
+         document.getElementById('modalImg').src = this.dataset.img ||document.getElementById('imgId').textContent; ;   
+        
+          const deleteBtn = document.getElementById('deleteBtn');  
+          const postId = postid = this.dataset.postid || document.getElementById('postId').textContent.trim();
+         
+                   
+       
+       if (!postId) {
+          console.error('postId yok!');
+          return;
+        }
+
+});
+});
+
+  $("form").submit(function(event) {
+    event.preventDefault();
+     
+    const formData = new FormData(event.target);
+        
+     if(event.target.name  === 'deleteForm'){
+
+        const deleteForm = document.getElementById('deleteForm');    
+        deleteForm.action = `/portfolio/${postid}?_method=DELETE`;
+        deleteForm.submit()
+            return;}
+
+     else{
+      const path = event.target.name === 'createForm' ? "/portfolio" : `/portfolio/${postid}`;
+      const postMethod = event.target.name === 'createForm' ? 'POST' : 'PUT';
+
+     fetch(path, {
+      method: postMethod,
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      Swal.fire({
+        icon: data.success ? 'success' : 'error',
+        title: data.message
+      }).then(() => {
+      window.location.href = data.redirect;
+    });
+  }); }
+
+ })
+})
+
+
+ </script>
+
+
+<div class="portfolio-modal modal fade" id="showPostModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img  src="assets/img/close-icon.svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                      
+                            <div class="modal-body">
+                            <!-- Project details-->
+
+                            <h3 id="modalProjectName" class="text-uppercase"> Project Name </h3>
+                            
+                            <p id="modalDescription" class="item-intro text-muted">Project Description</p>
+                           
+                            <img id="modalImg" class="img-fluid d-block mx-auto" src="" alt="..." />
+  
+                            <p id="modalDetail" class="item-intro text-muted">Project Detail</p>
+                            
+                          
+                            <ul class="list-inline">
+                                <li>
+                                    <strong>Client:</strong>
+                                    <span id="modalClient">Threads</span>
+                                </li>
+                                <li>
+                                    <strong>Category:</strong>
+                                    <span id="modalCategory">Illustration</span>
+                                </li>
+                            </ul>
+
+                             <div class="row">
+                    <div class="col">
+   <button class="btn btn-primary btn-xl me-4 text-uppercase" id='updateBtn'  data-bs-toggle="modal" data-bs-target="#editPostModal">
+                              <i class="fas fa-xmark me-1"></i>
+                              Update Project
+                          </button>
+                     </div>
+                  <div class="col ml-2">
+   
+                      <form name="deleteForm"  id="deleteForm" method="POST" >
+                      <input type="hidden" name="_method" value="DELETE"/>
+                       <button class="btn btn-danger btn-xl text-uppercase" type="submit" onclick="return confirm('ARE YOU SURE?')">
+                       <i class="fas fa-xmark me-1"></i>
+                       Delete Project
+                        </button>
+                        </form>
+                 </div>
+                 </div>
+                  
+                          <br>
+                            <button class="btn btn-info btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i>
+                                Close Project
+                            </button>
+                        </div>
+                    
+                      </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- Modal  Add-Button-->
+
+  <div class="modal fade " id="editPostModal" tabindex="-1"  aria-labelledby="editPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPostModalLabel">Edit Your Project</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" name="editForm"  encType="multipart/form-data" >
+                <div class="form-group" >
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Title</span>
+                </div>
+                <input type="text" class="form-control" name="title" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+              
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Subtitle</span>
+                </div>
+                <input type="text" class="form-control" name="subtitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+
+             
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Name</span>
+                </div>
+                <input type="text" class="form-control" name="projectName" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+              
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Descripton</span>
+                </div>
+                <input type="text" class="form-control" name="description" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+
+               <% if(categories !== undefined || null) { %>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <label class="input-group-text" for="inputGroupSelect01">Category  :</label>
+                </div>
+ 
+                <select class="custom-select w-75" id="inputGroupSelect01" name="category">
+                  <% categories.forEach(category => { %>
+                 <option ><%= category.name %></option>
+                    <% }); %>
+                </select>
+              </div>
+    <% } %>
+
+                                         
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Client :</span>
+                </div>
+                <input type="text" class="form-control" name="client" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Detail:</span>
+                </div>
+                <textarea class="form-control" name="detail" aria-label="With textarea"></textarea>
+              </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" >Save changes</button>
+        </div>
+        </form>
+      </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="modal fade" id="createPostModal" tabindex="-1"  aria-labelledby="CreatePostModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="CreatePostModalLabel">Add Your Project</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="/portfolio"  name="createForm" encType="multipart/form-data"  >
+                <div class="form-group" >
+
+                  <p id="message" hidden="true"> <strong></strong></p>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Title</span>
+                </div>
+                <input type="text" class="form-control" name="title" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project SubTitle</span>
+                </div>
+                <input type="text" class="form-control" name="subtitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Name</span>
+                </div>
+                <input type="text" class="form-control" name="projectName" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Project Descripton</span>
+                </div>
+                <input type="text" class="form-control" name="description" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+             
+   <% if(categories !== undefined || null) { %>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <label class="input-group-text" for="inputGroupSelect01">Category  :</label>
+                </div>
+                 
+                <select class="custom-select w-75" id="inputGroupSelect01" name="category">
+                  <% categories.forEach(category => { %>
+                 <option ><%= category.name %></option>
+                    <% }); %>
+                </select>
+               
+              </div>
+    <% } %>
+              <div class="input-group mb-3 border p-1  ">
+
+                <div class="custom-file ">
+                  <input type="file" name="image" class="custom-file-input " id="inputGroupFile03">
+                  <label class="custom-file-label" for="inputGroupFile03"></label>
+                </div>
+
+              </div>
+             
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Client :</span>
+                </div>
+                <input type="text" class="form-control" name="client" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Detail:</span>
+                </div>
+                <textarea class="form-control" name="detail" aria-label="With textarea"></textarea>
+              </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit"  class="btn btn-primary">Save changes</button>
+        </div>
+        </form>
+      </div>
+      </div>
+    </div>
+  </div>
+
+
+<%- include('partials/_footer.ejs') -%>
